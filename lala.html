@@ -1,0 +1,41 @@
+<html>
+    <head>
+        <style type="text/css">
+            iframe {
+                float: left;
+                margin-right: 2em;
+            }
+        </style>
+    </head>
+    <body>
+        <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+        <script type="text/babel" data-presets="es2015,stage-2,react">
+            let entryURL = 'https://alpha.buildup.ch/api/v1/external/entry/generic/oag2ipeeChaimiey';
+
+            let bodyElement = document.getElementsByTagName('body')[0];
+
+            let setOutput = (output) => {
+                let preElement = document.createElement("pre");
+
+                preElement.appendChild(document.createTextNode(output));
+
+                bodyElement.appendChild(preElement);
+            };
+
+            let iframeElement = document.createElement('iframe');
+            iframeElement.setAttribute('src', entryURL);
+            iframeElement.setAttribute('width', 400);
+            iframeElement.setAttribute('height', 600);
+            bodyElement.appendChild(iframeElement);
+
+            let receiveMessage = (event) => {
+                let data = JSON.parse(event.data);
+
+                setOutput(JSON.stringify(data, undefined, 4));
+            };
+
+            window.addEventListener("message", receiveMessage, false);
+        </script>
+    </body>
+</html>
