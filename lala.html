@@ -1,9 +1,18 @@
 <html>
     <head>
         <style type="text/css">
-            iframe {
-                float: left;
+            .api-view {
+                position: fixed;
+                left: 0;
+                top: 0;
+                width: 400px;
+                height: 100%;
+                border: none;
                 margin-right: 2em;
+            }
+
+            .output-container {
+                margin-left: 410px;
             }
         </style>
     </head>
@@ -15,19 +24,22 @@
 
             let bodyElement = document.getElementsByTagName('body')[0];
 
+            let iframeElement = document.createElement('iframe');
+            iframeElement.setAttribute('class', 'api-view');
+            iframeElement.setAttribute('src', entryURL);
+            bodyElement.appendChild(iframeElement);
+
+            let outputContainerElement = document.createElement('div');
+            outputContainerElement.setAttribute('class', 'output-container');
+            bodyElement.appendChild(outputContainerElement);
+
             let setOutput = (output) => {
                 let preElement = document.createElement("pre");
 
                 preElement.appendChild(document.createTextNode(output));
 
-                bodyElement.appendChild(preElement);
+                outputContainerElement.appendChild(preElement);
             };
-
-            let iframeElement = document.createElement('iframe');
-            iframeElement.setAttribute('src', entryURL);
-            iframeElement.setAttribute('width', 400);
-            iframeElement.setAttribute('height', 600);
-            bodyElement.appendChild(iframeElement);
 
             let receiveMessage = (event) => {
                 let data = JSON.parse(event.data);
@@ -35,7 +47,7 @@
                 setOutput(JSON.stringify(data, undefined, 4));
             };
 
-            window.addEventListener("message", receiveMessage, false);
+            window.addEventListener('message', receiveMessage, false);
         </script>
     </body>
 </html>
