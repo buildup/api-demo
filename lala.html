@@ -17,7 +17,8 @@
         </style>
     </head>
     <body>
-        <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+        <!-- Use babel to get a more modern and consistent JavaScript feature set across different browsers. See https://babeljs.io/docs/setup/#installation ("In the browser") -->
+        <script crossorigin src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
 
         <script type="text/babel" data-presets="es2015,stage-2">
             let createElement = (tagName, attributes = {}) => {
@@ -30,15 +31,21 @@
                 return newElement;
             };
 
+            // URL used for the initial view to load from the API.
             let entryURL = 'https://alpha.buildup.ch/api/v1/external/entry/generic/oag2ipeeChaimiey';
-            let bodyElement = document.getElementsByTagName('body')[0];
+
+            // Element into which the API view is loaded.
             let iframeElement = createElement('iframe', {'class': 'api-view', 'src': entryURL});
+
+            // Element into which we write data received from the API throught the callback.
             let outputContainerElement = createElement('div', {'class': 'output-container'});
 
+            let bodyElement = document.getElementsByTagName('body')[0];
             bodyElement.appendChild(iframeElement);
             bodyElement.appendChild(outputContainerElement);
 
-            let setOutput = (output) => {
+            // Writes the specified text into the output <div>.
+            let addOutput = (output) => {
                 let preElement = document.createElement("pre");
 
                 preElement.appendChild(document.createTextNode(output));
@@ -46,10 +53,11 @@
                 outputContainerElement.appendChild(preElement);
             };
 
+            // Callack which is called when the user selects a product using the API view.
             let receiveMessage = (event) => {
                 let data = JSON.parse(event.data);
 
-                setOutput(JSON.stringify(data, undefined, 4));
+                addOutput(JSON.stringify(data, undefined, 4));
             };
 
             window.addEventListener('message', receiveMessage, false);
