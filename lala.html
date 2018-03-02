@@ -20,17 +20,22 @@
         <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
 
         <script type="text/babel" data-presets="es2015,stage-2">
+            let createElement = (tagName, attributes = {}) => {
+                let newElement = document.createElement(tagName);
+
+                Object.entries(attributes).forEach(([name, value]) => {
+                    newElement.setAttribute(name, value);
+                });
+
+                return newElement;
+            };
+
             let entryURL = 'https://alpha.buildup.ch/api/v1/external/entry/generic/oag2ipeeChaimiey';
-
             let bodyElement = document.getElementsByTagName('body')[0];
+            let iframeElement = createElement('iframe', {'class': 'api-view', 'src': entryURL});
+            let outputContainerElement = createElement('div', {'class': 'output-container'});
 
-            let iframeElement = document.createElement('iframe');
-            iframeElement.setAttribute('class', 'api-view');
-            iframeElement.setAttribute('src', entryURL);
             bodyElement.appendChild(iframeElement);
-
-            let outputContainerElement = document.createElement('div');
-            outputContainerElement.setAttribute('class', 'output-container');
             bodyElement.appendChild(outputContainerElement);
 
             let setOutput = (output) => {
