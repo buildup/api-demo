@@ -1,66 +1,185 @@
+<!DOCTYPE html>
+
 <html>
     <head>
         <style type="text/css">
-            .api-view {
+            body {
+                font-family: sans-serif;
+            }
+
+            pre {
+                /* Allow overwriting word-wrapping behavior, where appropriate. */
+                white-space: pre-wrap;
+            }
+
+            #api-view-column-container {
                 position: fixed;
                 left: 0;
                 top: 0;
                 width: 400px;
                 height: 100%;
-                border: none;
-                margin-right: 2em;
+                background: #eee;
             }
 
-            .output-container {
-                margin-left: 410px;
+            .output-column {
+                padding-left: 410px;
+            }
+
+            #entry-form {
+                margin: 20px;
+            }
+
+            #api-view {
+                border: none;
+                width: 100%;
+                height: 100%;
+            }
+
+            .break-anywhere {
+                overflow-wrap: break-word;
             }
         </style>
     </head>
     <body>
+        <div id="api-view-column-container">
+            <form id="entry-form">
+                <p>
+                    <label>
+                        Instance:<br>
+                        <select name="instance">
+                            <option value="beta.buildup.ch">beta.buildup.ch</option>
+                            <option value="www.buildup.ch">www.buildup.ch</option>
+                        </select>
+                        <input type="button" value="&hellip;">
+                    </label>
+                </p>
+                <p>
+                    <label>
+                        Context:<br>
+                        <input name="context" type="text" value="generic"/>
+                    </label>
+                </p>
+                <p>
+                    <label>
+                        Token:<br>
+                        <input name="token" type="text" value="oag2ipeeChaimiey">
+                    </label>
+                </p>
+                <p>
+                    <label>
+                        Query Options:<br>
+                        <textarea name="query-options" cols="40" rows="5"></textarea>
+                    </label>
+                </p>
+                <p>
+                    <label>
+                        Entry URL:<br>
+                        <a id="entry-url-link" href="#"><code class="break-anywhere"></code></a>
+                    </label>
+                </p>
+            </form>
+
+            <iframe id="api-view"></iframe>
+        </div>
+
+        <div id="output-container" class="output-column break-anywhere"></div>
+
         <!-- Use babel to get a more modern and consistent JavaScript feature set across different browsers. See https://babeljs.io/docs/setup/#installation ("In the browser") -->
         <script crossorigin src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
 
         <script type="text/babel" data-presets="es2015,stage-2">
-            let createElement = (tagName, attributes = {}) => {
-                let newElement = document.createElement(tagName);
+            // Container for the form and API view.
+            let apiViewColumnContainerElement = document.getElementById('api-view-column-container');
+            // Form used to build the URL from which to load the API view.
+            let entryFormElement = document.getElementById('entry-form');
+            // Element into which the API view is loaded.
+            let apiViewElement = document.getElementById('api-view');
+            // Element into which we write data received from the API through the callback.
+            let outputContainerElement = document.getElementById('output-container');
+            let entryULRLinkElement = document.getElementById('entry-url-link');
 
-                Object.entries(attributes).forEach(([name, value]) => {
-                    newElement.setAttribute(name, value);
+            let showAPIViewColumnElement = (elementToShow) => {
+                let apiViewColumnElements = Array.from(apiViewColumnContainerElement.children);
+
+                apiViewColumnElements.forEach((element) => {
+                    element.style.display = element === elementToShow ? null : 'none'
                 });
-
-                return newElement;
             };
 
-            // URL used for the initial view to load from the API.
-            let entryURL = 'https://alpha.buildup.ch/api/v1/external/entry/generic/oag2ipeeChaimiey';
+            // Show the API <iframe> and load the API view in it.
+            let switchToAPIView = () => {
+                apiViewElement.src = getEntryURL();
 
-            // Element into which the API view is loaded.
-            let iframeElement = createElement('iframe', {'class': 'api-view', 'src': entryURL});
+                showAPIViewColumnElement(apiViewElement);
+            };
 
-            // Element into which we write data received from the API throught the callback.
-            let outputContainerElement = createElement('div', {'class': 'output-container'});
+            // Builds and returns the URL to load the API view from.
+            let getEntryURL = () => {
+                let splitParameter = (parameter) => {
+                    // Split parameter string on first equals sign, if there is any.
+                    let match = parameter.match(/(.*?)(=(.*))?$/);
 
-            let bodyElement = document.getElementsByTagName('body')[0];
-            bodyElement.appendChild(iframeElement);
-            bodyElement.appendChild(outputContainerElement);
+                    return [match[1], match[3] || ''];
+                };
+
+                let instance = entryFormElement.elements['instance'].value;
+                let context = entryFormElement.elements['context'].value;
+                let token = entryFormElement.elements['token'].value;
+                let queryOptions = entryFormElement.elements['query-options'].value
+                    .split('\n')
+                    .filter((x) => x)
+                    .map(splitParameter);
+                let optionsString = queryOptions
+                    .map(([name, value]) => `${encodeURIComponent(name)}=${encodeURIComponent(value)}`)
+                    .join('&');
+
+                return `https://${instance}/api/v1/external/entry/${context}/${token}?${optionsString}`;
+            };
+
+            let updateEntryURL = () => {
+                let entryURL = getEntryURL();
+                let entryURLCodeElement = entryULRLinkElement.getElementsByTagName('code')[0];
+
+                // Replace the content of the <code> element with the new URL.
+                entryURLCodeElement.childNodes.forEach((x) => x.remove());
+                entryURLCodeElement.appendChild(document.createTextNode(entryURL));
+            };
+
+            let setupEntryForm = () => {
+                // Add event listeners to update the URL when the parameters are changed.
+                Array.from(entryFormElement.elements).forEach((element) => {
+                    element.addEventListener('input', updateEntryURL);
+                });
+
+                // Update once on load.
+                updateEntryURL();
+
+                entryULRLinkElement.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    switchToAPIView();
+                });
+            };
+
+            setupEntryForm();
+            showAPIViewColumnElement(entryFormElement);
 
             // Writes the specified text into the output <div>.
             let addOutput = (output) => {
-                let preElement = document.createElement("pre");
+                let preElement = document.createElement('pre');
 
                 preElement.appendChild(document.createTextNode(output));
-
                 outputContainerElement.appendChild(preElement);
+                window.scrollTo(0,document.body.scrollHeight);
             };
 
-            // Callack which is called when the user selects a product using the API view.
-            let receiveMessage = (event) => {
+            // Callback which is called when the user selects a product using the API view.
+            let handleMessageFromAPIView = (event) => {
                 let data = JSON.parse(event.data);
 
                 addOutput(JSON.stringify(data, undefined, 4));
             };
 
-            window.addEventListener('message', receiveMessage, false);
+            window.addEventListener('message', handleMessageFromAPIView, false);
         </script>
     </body>
 </html>
