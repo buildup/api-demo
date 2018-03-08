@@ -12,25 +12,27 @@
                 white-space: pre-wrap;
             }
 
-            #api-view-column-container {
+            .left-column {
                 position: fixed;
                 left: 0;
                 top: 0;
-                width: 400px;
-                height: 100%;
+                bottom: 0;
+                width: 360px;
                 background: #eee;
+                padding: 0 20px;
+                overflow-y: scroll;
             }
 
-            .output-column {
-                padding-left: 410px;
-            }
-
-            #entry-form {
-                margin: 20px;
+            .right-column {
+                position: fixed;
+                left: 400px;
+                right: 0;
+                top: 0;
+                bottom: 0;
             }
 
             #entry-form input, #entry-form select, #entry-form textarea {
-                width: 360px;
+                width: 100%;
             }
 
             #api-view {
@@ -45,14 +47,14 @@
         </style>
     </head>
     <body>
-        <div id="api-view-column-container">
+        <div class="left-column">
             <form id="entry-form">
                 <p>
                     <label>
                         Instance:<br>
                         <select name="instance">
-                            <option value="https://beta.buildup.ch/api/v1">beta.buildup.ch</option>
                             <option value="https://www.buildup.ch/api/v1">www.buildup.ch</option>
+                            <option value="https://beta.buildup.ch/api/v1">beta.buildup.ch</option>
                             <option value="">Custom &hellip;</option>
                         </select>
                         <input id="custom-instance-input" type="text" value="https://beta.buildup.ch/api/v1" style="display: none;">
@@ -84,18 +86,18 @@
                     </label>
                 </p>
             </form>
-
-            <iframe id="api-view"></iframe>
+            <hr>
+            <div id="output-container" class="break-anywhere"></div>
         </div>
 
-        <div id="output-container" class="output-column break-anywhere"></div>
+        <div class="right-column">
+            <iframe id="api-view"></iframe>
+        </div>
 
         <!-- Use babel to get a more modern and consistent JavaScript feature set across different browsers. See https://babeljs.io/docs/setup/#installation ("In the browser") -->
         <script crossorigin src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
 
         <script type="text/babel" data-presets="es2015,stage-2">
-            // Container for the form and API view.
-            let apiViewColumnContainerElement = document.getElementById('api-view-column-container');
             // Form used to build the URL from which to load the API view.
             let entryFormElement = document.getElementById('entry-form');
             // Element into which the API view is loaded.
@@ -104,19 +106,10 @@
             let outputContainerElement = document.getElementById('output-container');
             let entryULRLinkElement = document.getElementById('entry-url-link');
 
-            let showAPIViewColumnElement = (elementToShow) => {
-                let apiViewColumnElements = Array.from(apiViewColumnContainerElement.children);
-
-                apiViewColumnElements.forEach((element) => {
-                    element.style.display = element === elementToShow ? null : 'none'
-                });
-            };
-
-            // Show the API <iframe> and load the API view in it.
-            let switchToAPIView = () => {
-                apiViewElement.src = getEntryURL();
-
-                showAPIViewColumnElement(apiViewElement);
+            // Replaces all children of an element with the specified element.
+            let replaceChildren = (parent, newChild) => {
+                parent.childNodes.forEach((x) => x.remove());
+                parent.appendChild(newChild);
             };
 
             // Builds and returns the URL to load the API view from.
@@ -148,8 +141,7 @@
                 let entryURLCodeElement = entryULRLinkElement.getElementsByTagName('code')[0];
 
                 // Replace the content of the <code> element with the new URL.
-                entryURLCodeElement.childNodes.forEach((x) => x.remove());
-                entryURLCodeElement.appendChild(document.createTextNode(entryURL));
+                replaceChildren(entryURLCodeElement, document.createTextNode(entryURL))
             };
 
             // Sets up the complete form used to generate the entry URL.
@@ -164,7 +156,9 @@
 
                 entryULRLinkElement.addEventListener('click', (event) => {
                     event.preventDefault();
-                    switchToAPIView();
+
+                    // Load the API view in the <iframe>.
+                    apiViewElement.src = getEntryURL();
                 });
 
                 let instanceElement = entryFormElement.elements['instance'];
@@ -174,6 +168,7 @@
                     if (instanceElement.value === '') {
                         let customInstanceElement = document.getElementById("custom-instance-input");
 
+                        // Logically replace the <select> element with the <text> element.
                         customInstanceElement.name = instanceElement.name;
                         customInstanceElement.style.display = null;
                         customInstanceElement.select();
@@ -182,26 +177,28 @@
                 });
             };
 
+            // Sets up the callback which receives the data returned by the API.
+            let setupCallbackHandler = () => {
+                // Writes the specified text into the output <div>.
+                let addOutput = (output) => {
+                    let preElement = document.createElement('pre');
+                    preElement.appendChild(document.createTextNode(output));
+
+                    replaceChildren(outputContainerElement, preElement);
+                };
+
+                // Callback which is called when the user selects a product using the API view.
+                let handleMessageFromAPIView = (event) => {
+                    let data = JSON.parse(event.data);
+
+                    addOutput(JSON.stringify(data, undefined, 4));
+                };
+
+                window.addEventListener('message', handleMessageFromAPIView, false);
+            };
+
             setupEntryForm();
-            showAPIViewColumnElement(entryFormElement);
-
-            // Writes the specified text into the output <div>.
-            let addOutput = (output) => {
-                let preElement = document.createElement('pre');
-
-                preElement.appendChild(document.createTextNode(output));
-                outputContainerElement.appendChild(preElement);
-                window.scrollTo(0,document.body.scrollHeight);
-            };
-
-            // Callback which is called when the user selects a product using the API view.
-            let handleMessageFromAPIView = (event) => {
-                let data = JSON.parse(event.data);
-
-                addOutput(JSON.stringify(data, undefined, 4));
-            };
-
-            window.addEventListener('message', handleMessageFromAPIView, false);
+            setupCallbackHandler();
         </script>
     </body>
 </html>
