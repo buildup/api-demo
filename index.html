@@ -148,6 +148,10 @@
                 replaceChildren(entryURLCodeElement, document.createTextNode(entryURL))
             };
 
+            let loadURLInAPIView = (url) => {
+                apiViewElement.src = url;
+            };
+
             // Sets up the complete form used to generate the entry URL.
             let setupEntryForm = () => {
                 // Add event listeners to update the URL when the parameters are changed.
@@ -162,7 +166,7 @@
                     event.preventDefault();
 
                     // Load the API view in the <iframe>.
-                    apiViewElement.src = getEntryURL();
+                    loadURLInAPIView(getEntryURL())
                 });
 
                 let instanceElement = entryFormElement.elements['instance'];
@@ -194,8 +198,13 @@
                 // Callback which is called when the user selects a product using the API view.
                 let handleMessageFromAPIView = (event) => {
                     let data = JSON.parse(event.data);
+                    let briefURL = data.briefProductUrl;
 
                     addOutput(JSON.stringify(data, undefined, 4));
+
+                    if (briefURL !== undefined) {
+                        loadURLInAPIView(briefURL)
+                    }
                 };
 
                 window.addEventListener('message', handleMessageFromAPIView, false);
