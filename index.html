@@ -132,7 +132,11 @@
                     .map(([name, value]) => `${encodeURIComponent(name)}=${encodeURIComponent(value)}`)
                     .join('&');
 
-                return `${instance}/external/entry/${context}/${token}?${optionsString}`;
+                if (optionsString !== '') {
+                    optionsString = '?' + optionsString;
+                }
+
+                return `${instance}/external/entry/${context}/${token}${optionsString}`;
             };
 
             // Update the displayed entry URL.
