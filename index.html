@@ -51,10 +51,11 @@
                     <label>
                         Instance:<br>
                         <select name="instance">
-                            <option value="beta.buildup.ch">beta.buildup.ch</option>
-                            <option value="www.buildup.ch">www.buildup.ch</option>
+                            <option value="https://beta.buildup.ch/api/v1">beta.buildup.ch</option>
+                            <option value="https://www.buildup.ch/api/v1">www.buildup.ch</option>
+                            <option value="">Custom &hellip;</option>
                         </select>
-                        <input type="button" value="&hellip;">
+                        <input id="custom-instance-input" type="text" value="https://beta.buildup.ch/api/v1" style="display: none;">
                     </label>
                 </p>
                 <p>
@@ -72,7 +73,7 @@
                 <p>
                     <label>
                         Query Options:<br>
-                        <textarea name="query-options" cols="40" rows="5"></textarea>
+                        <textarea name="query-options" rows="5"></textarea>
                     </label>
                 </p>
                 <p>
@@ -137,9 +138,10 @@
                     .map(([name, value]) => `${encodeURIComponent(name)}=${encodeURIComponent(value)}`)
                     .join('&');
 
-                return `https://${instance}/api/v1/external/entry/${context}/${token}?${optionsString}`;
+                return `${instance}/external/entry/${context}/${token}?${optionsString}`;
             };
 
+            // Update the displayed entry URL.
             let updateEntryURL = () => {
                 let entryURL = getEntryURL();
                 let entryURLCodeElement = entryULRLinkElement.getElementsByTagName('code')[0];
@@ -149,6 +151,7 @@
                 entryURLCodeElement.appendChild(document.createTextNode(entryURL));
             };
 
+            // Sets up the complete form used to generate the entry URL.
             let setupEntryForm = () => {
                 // Add event listeners to update the URL when the parameters are changed.
                 Array.from(entryFormElement.elements).forEach((element) => {
@@ -161,6 +164,20 @@
                 entryULRLinkElement.addEventListener('click', (event) => {
                     event.preventDefault();
                     switchToAPIView();
+                });
+
+                let instanceElement = entryFormElement.elements['instance'];
+
+                // Set up the logic to handle the "Custom …" entry in the instance <select> element.
+                instanceElement.addEventListener('change', () => {
+                    if (instanceElement.value === '') {
+                        let customInstanceElement = document.getElementById("custom-instance-input");
+
+                        customInstanceElement.name = instanceElement.name;
+                        customInstanceElement.style.display = null;
+                        customInstanceElement.select();
+                        instanceElement.remove();
+                    }
                 });
             };
 
