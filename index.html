@@ -181,6 +181,9 @@
                         customInstanceElement.style.display = null;
                         customInstanceElement.select();
                         instanceElement.remove();
+
+                        // Trigger this once so the URL from the text field get's used.
+                        updateEntryURL()
                     }
                 });
             };
