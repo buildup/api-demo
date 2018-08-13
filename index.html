@@ -53,11 +53,12 @@
                     <label>
                         Instance:<br>
                         <select name="instance">
-                            <option value="https://ch.buildup.group/api/v1">ch.buildup.group</option>
-                            <option value="https://beta-ch.buildup.group/api/v1">beta-ch.buildup.group</option>
+                            <option value="https://api-ch.buildup.group/api/v1">api-ch.buildup.group</option>
+                            <option value="https://beta-api-ch.buildup.group/api/v1">beta-api-ch.buildup.group</option>
+                            <option value="https://alpha-api.buildup.group/api/v1">alpha-api.buildup.group</option>
                             <option value="">Custom &hellip;</option>
                         </select>
-                        <input id="custom-instance-input" type="text" value="https://ch.buildup.group/api/v1" style="display: none;">
+                        <input id="custom-instance-input" type="text" style="display: none;">
                     </label>
                 </p>
                 <p>
@@ -178,6 +179,7 @@
 
                         // Logically replace the <select> element with the <text> element.
                         customInstanceElement.name = instanceElement.name;
+                        customInstanceElement.value = instanceElement.firstElementChild.value;
                         customInstanceElement.style.display = null;
                         customInstanceElement.select();
                         instanceElement.remove();
