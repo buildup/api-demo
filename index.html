@@ -147,6 +147,9 @@
 
                 // Replace the content of the <code> element with the new URL.
                 replaceChildren(entryURLCodeElement, document.createTextNode(entryURL))
+
+                // Also set the href attribute to make the "Copy Link Location" context menu item work as expected.
+                entryULRLinkElement.href = entryURL
             };
 
             let loadURLInAPIView = (url) => {
