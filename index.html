@@ -35,7 +35,7 @@
                 width: 100%;
             }
 
-            #api-view {
+            #api-view-container > iframe {
                 border: none;
                 width: 100%;
                 height: 100%;
@@ -91,9 +91,7 @@
             <div id="output-container" class="break-anywhere"></div>
         </div>
 
-        <div class="right-column">
-            <iframe id="api-view"></iframe>
-        </div>
+        <div id="api-view-container" class="right-column"></div>
 
         <!-- Use babel to get a more modern and consistent JavaScript feature set across different browsers. See https://babeljs.io/docs/setup/#installation ("In the browser") -->
         <script crossorigin src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
@@ -102,7 +100,7 @@
             // Form used to build the URL from which to load the API view.
             let entryFormElement = document.getElementById('entry-form');
             // Element into which the API view is loaded.
-            let apiViewElement = document.getElementById('api-view');
+            let apiViewContainerElement = document.getElementById('api-view-container');
             // Element into which we write data received from the API through the callback.
             let outputContainerElement = document.getElementById('output-container');
             let entryULRLinkElement = document.getElementById('entry-url-link');
@@ -146,14 +144,21 @@
                 let entryURLCodeElement = entryULRLinkElement.getElementsByTagName('code')[0];
 
                 // Replace the content of the <code> element with the new URL.
-                replaceChildren(entryURLCodeElement, document.createTextNode(entryURL))
+                replaceChildren(entryURLCodeElement, document.createTextNode(entryURL));
 
                 // Also set the href attribute to make the "Copy Link Location" context menu item work as expected.
                 entryULRLinkElement.href = entryURL
             };
 
             let loadURLInAPIView = (url) => {
+                let apiViewElement = document.createElement('iframe');
                 apiViewElement.src = url;
+
+                apiViewContainerElement.childNodes.forEach((element) => {
+                    apiViewContainerElement.removeChild(element);
+                });
+
+                apiViewContainerElement.appendChild(apiViewElement);
             };
 
             // Sets up the complete form used to generate the entry URL.
