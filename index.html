@@ -54,8 +54,8 @@
                         Instance:<br>
                         <select name="instance">
                             <option value="https://api-ch.buildup.group/api/v1">api-ch.buildup.group</option>
-                            <option value="https://api-at.buildup.group/api/v1">at.buildup.group</option>
-                            <option value="https://api-de.buildup.group/api/v1">de.buildup.group</option>
+                            <option value="https://api-at.buildup.group/api/v1">api-at.buildup.group</option>
+                            <option value="https://api-de.buildup.group/api/v1">api-de.buildup.group</option>
                             <option value="https://beta-api-ch.buildup.group/api/v1">beta-api-ch.buildup.group</option>
                             <option value="https://alpha-api.buildup.group/api/v1">alpha-api.buildup.group</option>
                             <option value="">Custom &hellip;</option>
@@ -75,6 +75,7 @@
                         <input name="token" type="text" value="oag2ipeeChaimiey">
                     </label>
                 </p>
+                <!---
                 <p>
                     <label>
                         Query Options:<br>
@@ -83,7 +84,8 @@
                     <small>
                         One <code>key=value</code> pair per line.
                     </small>
-                </p>
+                </p> 
+                --->
                 <p>
                     <label>
                         Entry URL:<br>
@@ -95,7 +97,14 @@
             <div id="output-container" class="break-anywhere"></div>
         </div>
 
-        <div id="api-view-container" class="right-column"></div>
+        <div id="api-view-container" class="right-column">
+        <h3>
+        Hier steht Ihre Anwendung:
+        </h3>
+        Und irgendwo darin das Buildup-Suchfeld
+        <br>
+        (Aktivieren durch Klick auf die URL)
+        </div>
 
         <!-- Use babel to get a more modern and consistent JavaScript feature set across different browsers. See https://babeljs.io/docs/setup/#installation ("In the browser") -->
         <script crossorigin src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
@@ -127,13 +136,14 @@
                 let instance = entryFormElement.elements['instance'].value;
                 let context = entryFormElement.elements['context'].value;
                 let token = entryFormElement.elements['token'].value;
-                let queryOptions = entryFormElement.elements['query-options'].value
+                /*let queryOptions = entryFormElement.elements['query-options'].value
                     .split('\n')
                     .filter((x) => x)
-                    .map(splitParameter);
-                let optionsString = queryOptions
+                    .map(splitParameter);*/
+                let optionsString = ''
+                /*queryOptions
                     .map(([name, value]) => `${encodeURIComponent(name)}=${encodeURIComponent(value)}`)
-                    .join('&');
+                    .join('&');*/
 
                 if (optionsString !== '') {
                     optionsString = '?' + optionsString;
@@ -162,7 +172,7 @@
                     apiViewContainerElement.removeChild(element);
                 });
 
-                apiViewContainerElement.appendChild(apiViewElement);
+            apiViewContainerElement.appendChild(apiViewElement);
             };
 
             // Sets up the complete form used to generate the entry URL.
